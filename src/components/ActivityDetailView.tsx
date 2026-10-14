@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Activity, UserProfile } from '../types/activity';
 import { formatDistance, formatDuration, formatPace, formatSpeed, formatDate } from '../utils/formatters';
+import { analyzeActivityCoach } from '../services/coachEngine';
+import { downloadWorkoutFit } from '../services/garminWorkoutExporter';
 import { LeafletMap } from './LeafletMap';
 import { ActivityCharts } from './ActivityCharts';
 import { SplitsTable } from './SplitsTable';
 import {
   ArrowLeft,
   Heart,
-  Flame,
   TrendingUp,
   Watch,
   Trash2,
@@ -15,7 +16,11 @@ import {
   Download,
   Zap,
   Timer,
-  Milestone
+  Milestone,
+  Footprints,
+  Sparkles,
+  GitCompare,
+  CheckCircle2
 } from 'lucide-react';
 
 interface ActivityDetailViewProps {
@@ -24,6 +29,7 @@ interface ActivityDetailViewProps {
   onBack: () => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
+  onOpenComparison?: () => void;
 }
 
 export const ActivityDetailView: React.FC<ActivityDetailViewProps> = ({
@@ -32,8 +38,11 @@ export const ActivityDetailView: React.FC<ActivityDetailViewProps> = ({
   onBack,
   onDelete,
   onToggleFavorite,
+  onOpenComparison,
 }) => {
   const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
+
+  const coachReport = analyzeActivityCoach(activity);
 
   const exportActivityJson = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activity, null, 2));
@@ -46,6 +55,28 @@ export const ActivityDetailView: React.FC<ActivityDetailViewProps> = ({
   };
 
   const paceSec = activity.distanceMeters > 0 ? (activity.durationSeconds / activity.distanceMeters) * 1000 : 0;
+  const spm = activity.avgCadence || (activity.sport === 'running' ? 168 : undefined);
+  const fps = spm ? (spm / 60).toFixed(2) : undefined;
+
+  const handleSyncPrescription = () => {
+    if (!coachReport) return;
+    const p = coachReport.prescription;
+    downloadWorkoutFit({
+      id: `rx-${Date.now()}`,
+      title: p.title,
+      sport: p.sport === 'cycling' ? 'running' : (p.sport as any),
+      description: p.description,
+      createdAt: new Date().toISOString(),
+      estimatedDurationMinutes: p.durationMinutes,
+      steps: p.steps.map((s, idx) => ({
+        id: `${idx + 1}`,
+        name: s.name,
+        type: 'active',
+        durationSeconds: 300,
+        notes: s.target,
+      })),
+    });
+  };
 
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
@@ -60,6 +91,17 @@ export const ActivityDetailView: React.FC<ActivityDetailViewProps> = ({
         </button>
 
         <div className="flex items-center gap-2">
+          {onOpenComparison && (
+            <button
+              onClick={onOpenComparison}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-dark-card border border-dark-border text-xs font-semibold text-[#00F0FF] hover:border-[#00F0FF] transition-all"
+              title="Compare with another workout"
+            >
+              <GitCompare className="w-3.5 h-3.5" />
+              Compare
+            </button>
+          )}
+
           <button
             onClick={() => onToggleFavorite(activity.id)}
             className={`p-2 rounded-xl border transition-all ${
@@ -151,6 +193,19 @@ export const ActivityDetailView: React.FC<ActivityDetailViewProps> = ({
             </div>
           </div>
 
+          {/* Cadence / FPS */}
+          <div className="p-3.5 rounded-xl bg-dark-card border border-dark-border/80">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Footprints className="w-3.5 h-3.5 text-[#00F0FF]" /> Cadence
+            </span>
+            <div className="text-lg md:text-2xl font-black text-white font-mono mt-1">
+              {spm ? `${spm} SPM` : '--'}
+            </div>
+            {fps && (
+              <span className="text-[10px] text-[#00F0FF] font-mono">{fps} FPS</span>
+            )}
+          </div>
+
           {/* Heart Rate */}
           <div className="p-3.5 rounded-xl bg-dark-card border border-dark-border/80">
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -174,18 +229,67 @@ export const ActivityDetailView: React.FC<ActivityDetailViewProps> = ({
             </div>
             <span className="text-[10px] text-slate-500 font-mono">Loss: -{activity.elevationLossMeters} m</span>
           </div>
-
-          {/* Calories */}
-          <div className="p-3.5 rounded-xl bg-dark-card border border-dark-border/80">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-amber-500" /> Calories
-            </span>
-            <div className="text-lg md:text-2xl font-black text-amber-400 font-mono mt-1">
-              {activity.calories} kcal
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* AI Coach Insights & What to Change Card */}
+      {coachReport && (
+        <div className="p-6 rounded-3xl bg-gradient-to-r from-dark-surface via-dark-card to-dark-surface border border-[#00F0FF]/30 shadow-xl space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#00F0FF]" />
+              AI Coach Breakdown & Actionable Adjustments
+            </h3>
+            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[#00F0FF]/20 text-[#00F0FF] font-mono">
+              Smart Analysis
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Cadence Diagnosis */}
+            {coachReport.cadence && (
+              <div className="p-4 rounded-2xl bg-dark-bg/90 border border-dark-border space-y-2">
+                <span className="text-xs font-bold text-[#00F0FF] flex items-center gap-1.5 uppercase tracking-wider">
+                  <Footprints className="w-4 h-4" /> Cadence Analysis (SPM & FPS)
+                </span>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {coachReport.cadence.advice}
+                </p>
+              </div>
+            )}
+
+            {/* Pacing Fade Analysis */}
+            {coachReport.pacing && (
+              <div className="p-4 rounded-2xl bg-dark-bg/90 border border-dark-border space-y-2">
+                <span className="text-xs font-bold text-[#00E676] flex items-center gap-1.5 uppercase tracking-wider">
+                  <Zap className="w-4 h-4" /> Pacing Consistency ({coachReport.pacing.strategy.replace('_', ' ')})
+                </span>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {coachReport.pacing.advice}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Next Workout Recommendation */}
+          <div className="p-4 rounded-2xl bg-dark-card border border-dark-border flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" /> What to do for your next session:
+              </span>
+              <p className="text-sm font-bold text-white">{coachReport.prescription.title}</p>
+              <p className="text-xs text-slate-300">{coachReport.prescription.description}</p>
+            </div>
+            <button
+              onClick={handleSyncPrescription}
+              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#00F0FF] text-black font-bold text-xs hover:bg-[#00F0FF]/90 transition-all shadow-glow-cyan"
+            >
+              <Watch className="w-4 h-4" />
+              Sync Workout to Watch (.FIT)
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Interactive Map & GPS Stream (Leaflet) */}
       {activity.trackPoints && activity.trackPoints.length > 0 && (

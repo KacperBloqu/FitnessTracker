@@ -6,9 +6,12 @@ import { BottomNav } from './components/BottomNav';
 import { StatsSummaryCards } from './components/StatsSummaryCards';
 import { ActivityList } from './components/ActivityList';
 import { ActivityDetailView } from './components/ActivityDetailView';
+import { ProgressDashboard } from './components/ProgressDashboard';
 import { FileUploadModal } from './components/FileUploadModal';
 import { SettingsModal } from './components/SettingsModal';
-import { Watch, ArrowUpRight, Sparkles } from 'lucide-react';
+import { ActivityComparisonModal } from './components/ActivityComparisonModal';
+import { WorkoutCreatorModal } from './components/WorkoutCreatorModal';
+import { Watch, ArrowUpRight, Sparkles, GitCompare } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -20,12 +23,15 @@ export const App: React.FC = () => {
     unitPreference: 'metric',
   });
 
+  const [activeView, setActiveView] = useState<'dashboard' | 'progress'>('dashboard');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [mobileTab, setMobileTab] = useState<'dashboard' | 'activities'>('dashboard');
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
+  const [isWorkoutCreatorOpen, setIsWorkoutCreatorOpen] = useState(false);
+  const [compareInitialId, setCompareInitialId] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load initial data from IndexedDB
+  // Load initial data from IndexedDB & repo sync
   const loadData = async () => {
     try {
       await syncFromGitHubRepoData();
@@ -77,6 +83,11 @@ export const App: React.FC = () => {
     await saveUserProfile(newProfile);
   };
 
+  const handleOpenComparisonForActivity = (activityId?: string) => {
+    setCompareInitialId(activityId);
+    setIsComparisonOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-dark-bg flex flex-col items-center justify-center space-y-4">
@@ -90,14 +101,21 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-dark-bg text-slate-100 flex flex-col">
-      {/* Sticky Header */}
+      {/* Sticky Header with Navigation Tabs */}
       <Navbar
         profile={profile}
+        currentView={activeView}
+        onSelectView={(v) => {
+          setActiveView(v);
+          setSelectedActivity(null);
+        }}
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenComparison={() => handleOpenComparisonForActivity()}
+        onOpenWorkoutCreator={() => setIsWorkoutCreatorOpen(true)}
       />
 
-      {/* Main Container */}
+      {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-8 py-6 space-y-6">
         {selectedActivity ? (
           <ActivityDetailView
@@ -106,6 +124,14 @@ export const App: React.FC = () => {
             onBack={() => setSelectedActivity(null)}
             onDelete={handleDeleteActivity}
             onToggleFavorite={handleToggleFavorite}
+            onOpenComparison={() => handleOpenComparisonForActivity(selectedActivity.id)}
+          />
+        ) : activeView === 'progress' ? (
+          <ProgressDashboard
+            activities={activities}
+            profile={profile}
+            onOpenComparison={() => handleOpenComparisonForActivity()}
+            onOpenWorkoutCreator={() => setIsWorkoutCreatorOpen(true)}
           />
         ) : (
           <>
@@ -120,8 +146,33 @@ export const App: React.FC = () => {
                   Welcome back, <span className="text-[#00F0FF]">{profile.name}</span>
                 </h1>
                 <p className="text-xs md:text-sm text-slate-400 leading-relaxed">
-                  Analyze your Garmin runs, rides, and workouts with interactive GPS maps, heart rate zones, and split pace metrics. 100% private, client-side, and free forever.
+                  Track running cadence (FPS & SPM), gym volume, and swimming efficiency (SWOLF). Compare workouts side-by-side and create custom workouts to send to your Garmin watch.
                 </p>
+
+                {/* Quick Action Badges */}
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  <button
+                    onClick={() => setActiveView('progress')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-dark-bg/90 border border-dark-border text-xs text-[#00F0FF] hover:border-[#00F0FF] transition-all font-semibold"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    AI Coach Analysis
+                  </button>
+                  <button
+                    onClick={() => setIsWorkoutCreatorOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-dark-bg/90 border border-dark-border text-xs text-[#00E676] hover:border-[#00E676] transition-all font-semibold"
+                  >
+                    <Watch className="w-3.5 h-3.5" />
+                    Sync Workouts to Watch
+                  </button>
+                  <button
+                    onClick={() => handleOpenComparisonForActivity()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-dark-bg/90 border border-dark-border text-xs text-amber-400 hover:border-amber-400 transition-all font-semibold"
+                  >
+                    <GitCompare className="w-3.5 h-3.5" />
+                    Compare Sessions
+                  </button>
+                </div>
               </div>
 
               {/* Background ambient glow */}
@@ -139,12 +190,20 @@ export const App: React.FC = () => {
                   <Watch className="w-5 h-5 text-[#00F0FF]" />
                   Your Workouts ({activities.length})
                 </h2>
-                <button
-                  onClick={() => setIsUploadOpen(true)}
-                  className="text-xs font-bold text-[#00F0FF] hover:underline flex items-center gap-1"
-                >
-                  Upload File <ArrowUpRight className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => handleOpenComparisonForActivity()}
+                    className="text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1"
+                  >
+                    <GitCompare className="w-3.5 h-3.5 text-[#00E676]" /> Compare
+                  </button>
+                  <button
+                    onClick={() => setIsUploadOpen(true)}
+                    className="text-xs font-bold text-[#00F0FF] hover:underline flex items-center gap-1"
+                  >
+                    Upload File <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               <ActivityList
@@ -160,13 +219,14 @@ export const App: React.FC = () => {
 
       {/* Mobile Bottom Navigation Bar */}
       <BottomNav
-        currentTab={mobileTab}
+        currentTab={activeView}
         onSelectTab={(tab) => {
-          setMobileTab(tab);
-          if (selectedActivity) setSelectedActivity(null);
+          setActiveView(tab);
+          setSelectedActivity(null);
         }}
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenWorkoutCreator={() => setIsWorkoutCreatorOpen(true)}
       />
 
       {/* Upload File Modal */}
@@ -176,13 +236,28 @@ export const App: React.FC = () => {
         onActivityImported={handleActivityImported}
       />
 
-      {/* Settings & Garmin Automated Sync Modal */}
+      {/* Settings Modal */}
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         profile={profile}
         onUpdateProfile={handleUpdateProfile}
         onDataChanged={loadData}
+      />
+
+      {/* Activity Side-by-Side Comparison Modal */}
+      <ActivityComparisonModal
+        isOpen={isComparisonOpen}
+        onClose={() => setIsComparisonOpen(false)}
+        activities={activities}
+        profile={profile}
+        initialActivityId={compareInitialId}
+      />
+
+      {/* Structured Workout Creator & Garmin Sync Modal */}
+      <WorkoutCreatorModal
+        isOpen={isWorkoutCreatorOpen}
+        onClose={() => setIsWorkoutCreatorOpen(false)}
       />
     </div>
   );

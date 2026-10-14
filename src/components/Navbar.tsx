@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile } from '../types/activity';
-import { Activity, Plus, Settings, Smartphone } from 'lucide-react';
+import { Activity, Plus, Settings, Smartphone, Sparkles, GitCompare, LayoutDashboard, Watch } from 'lucide-react';
 
 interface NavbarProps {
   profile: UserProfile;
+  currentView: 'dashboard' | 'progress';
+  onSelectView: (view: 'dashboard' | 'progress') => void;
   onOpenUpload: () => void;
   onOpenSettings: () => void;
+  onOpenComparison: () => void;
+  onOpenWorkoutCreator: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   profile,
+  currentView,
+  onSelectView,
   onOpenUpload,
   onOpenSettings,
+  onOpenComparison,
+  onOpenWorkoutCreator,
 }) => {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
@@ -35,10 +43,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-dark-bg/85 backdrop-blur-md border-b border-dark-border px-4 md:px-8 py-3.5 transition-all">
+    <header className="sticky top-0 z-40 bg-dark-bg/85 backdrop-blur-md border-b border-dark-border px-4 md:px-8 py-3 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Brand */}
-        <div className="flex items-center gap-2.5 cursor-pointer">
+        <div
+          onClick={() => onSelectView('dashboard')}
+          className="flex items-center gap-2.5 cursor-pointer"
+        >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00F0FF] to-[#0072FF] flex items-center justify-center text-black shadow-glow-cyan">
             <Activity className="w-5 h-5 stroke-[2.5]" />
           </div>
@@ -49,39 +60,82 @@ export const Navbar: React.FC<NavbarProps> = ({
                 PWA
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 font-mono hidden md:block">100% Free • Private • Client-Side</p>
+            <p className="text-[10px] text-slate-400 font-mono hidden md:block">Free Athletic Analytics</p>
           </div>
         </div>
 
+        {/* Center Desktop Navigation Tabs */}
+        <nav className="hidden md:flex items-center gap-1 bg-dark-card p-1 rounded-2xl border border-dark-border text-xs">
+          <button
+            onClick={() => onSelectView('dashboard')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition-all ${
+              currentView === 'dashboard'
+                ? 'bg-[#00F0FF] text-black shadow-glow-cyan'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            Dashboard
+          </button>
+
+          <button
+            onClick={() => onSelectView('progress')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition-all ${
+              currentView === 'progress'
+                ? 'bg-[#00F0FF] text-black shadow-glow-cyan'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Coach & Progress
+          </button>
+
+          <button
+            onClick={onOpenWorkoutCreator}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-medium text-slate-400 hover:text-white hover:bg-dark-hover transition-all"
+          >
+            <Watch className="w-3.5 h-3.5 text-[#00F0FF]" />
+            Workout Builder
+          </button>
+
+          <button
+            onClick={onOpenComparison}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-medium text-slate-400 hover:text-white hover:bg-dark-hover transition-all"
+          >
+            <GitCompare className="w-3.5 h-3.5 text-[#00E676]" />
+            Compare
+          </button>
+        </nav>
+
         {/* Right Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {/* PWA Install Button */}
           <button
             onClick={handleInstallClick}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-dark-card border border-dark-border hover:border-slate-500 text-xs font-medium text-slate-300 hover:text-white transition-all"
+            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-dark-card border border-dark-border hover:border-slate-500 text-xs font-medium text-slate-300 hover:text-white transition-all"
             title="Install App on Desktop or Mobile"
           >
             <Smartphone className="w-3.5 h-3.5 text-[#00F0FF]" />
-            <span>Install App</span>
+            <span>Install</span>
           </button>
 
           {/* Import Workout Button */}
           <button
             onClick={onOpenUpload}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 md:py-2 rounded-xl bg-[#00F0FF] text-black font-bold text-xs md:text-sm hover:bg-[#00F0FF]/90 transition-all shadow-glow-cyan"
+            className="flex items-center gap-1.5 px-3 py-1.5 md:py-2 rounded-xl bg-[#00F0FF] text-black font-bold text-xs md:text-sm hover:bg-[#00F0FF]/90 transition-all shadow-glow-cyan"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Import .FIT / .GPX</span>
+            <span>Import File</span>
           </button>
 
           {/* Settings Button */}
           <button
             onClick={onOpenSettings}
-            className="flex items-center gap-2 p-2 px-2.5 rounded-xl bg-dark-card border border-dark-border text-slate-400 hover:text-white hover:border-slate-500 transition-all text-xs"
+            className="flex items-center gap-1.5 p-2 px-2.5 rounded-xl bg-dark-card border border-dark-border text-slate-400 hover:text-white hover:border-slate-500 transition-all text-xs"
             title="Settings & Profile"
           >
             <Settings className="w-4 h-4" />
-            <span className="hidden lg:inline text-slate-300 font-medium">{profile.name}</span>
+            <span className="hidden xl:inline text-slate-300 font-medium">{profile.name}</span>
           </button>
         </div>
       </div>
