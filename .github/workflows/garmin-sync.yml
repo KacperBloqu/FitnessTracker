@@ -1,0 +1,40 @@
+name: Garmin Daily Auto-Sync
+
+on:
+  schedule:
+    # Run every day at 04:00 UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch: # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install garminconnect
+
+      - name: Fetch Garmin Activities
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: |
+          python scripts/sync_garmin.py
+
+      - name: Commit and push updated activities
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/activities.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-sync Garmin workouts [skip ci]" && git push)
