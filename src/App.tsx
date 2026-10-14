@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, UserProfile } from './types/activity';
-import { getAllActivities, saveActivity, deleteActivity, getUserProfile, saveUserProfile } from './services/storage';
+import { getAllActivities, saveActivity, deleteActivity, getUserProfile, saveUserProfile, syncFromGitHubRepoData } from './services/storage';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import { StatsSummaryCards } from './components/StatsSummaryCards';
@@ -28,6 +28,7 @@ export const App: React.FC = () => {
   // Load initial data from IndexedDB
   const loadData = async () => {
     try {
+      await syncFromGitHubRepoData();
       const [storedActivities, storedProfile] = await Promise.all([
         getAllActivities(),
         getUserProfile(),
