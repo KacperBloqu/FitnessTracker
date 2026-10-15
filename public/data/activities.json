@@ -2,7 +2,7 @@
   {
     "id": "garmin-24713241461",
     "title": "\u0106wiczenia si\u0142owe",
-    "sport": "workout",
+    "sport": "running",
     "startTime": "2026-10-13 20:16:27",
     "durationSeconds": 2403,
     "distanceMeters": 0,
@@ -54,7 +54,7 @@
   {
     "id": "garmin-24569652037",
     "title": "\u0106wiczenia si\u0142owe",
-    "sport": "workout",
+    "sport": "running",
     "startTime": "2026-10-01 18:07:18",
     "durationSeconds": 2650,
     "distanceMeters": 0,
@@ -418,7 +418,7 @@
   {
     "id": "garmin-24447186021",
     "title": "Dzie\u0144 dla plec\u00f3w",
-    "sport": "workout",
+    "sport": "running",
     "startTime": "2026-09-21 20:16:34",
     "durationSeconds": 578,
     "distanceMeters": 0,
@@ -444,7 +444,7 @@
   {
     "id": "garmin-24446891182",
     "title": "Dzie\u0144 treningu klatki piersiowej",
-    "sport": "workout",
+    "sport": "running",
     "startTime": "2026-09-21 19:47:36",
     "durationSeconds": 1018,
     "distanceMeters": 0,
@@ -470,7 +470,7 @@
   {
     "id": "garmin-24446415659",
     "title": "Dzie\u0144 dla r\u0105k 5x10 @60%",
-    "sport": "workout",
+    "sport": "running",
     "startTime": "2026-09-21 19:11:51",
     "durationSeconds": 1322,
     "distanceMeters": 0,
@@ -652,7 +652,7 @@
   {
     "id": "garmin-24359099559",
     "title": "Dzie\u0144 dla r\u0105k",
-    "sport": "workout",
+    "sport": "running",
     "startTime": "2026-09-14 17:26:12",
     "durationSeconds": 1620,
     "distanceMeters": 0,
@@ -678,7 +678,7 @@
   {
     "id": "garmin-24337816157",
     "title": "Wojownik na fali",
-    "sport": "workout",
+    "sport": "running",
     "startTime": "2026-09-12 20:37:05",
     "durationSeconds": 432,
     "distanceMeters": 0,
