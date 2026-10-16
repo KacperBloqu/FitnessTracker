@@ -1,5 +1,31 @@
 [
   {
+    "id": "garmin-24733788474",
+    "title": "\u0106wiczenia si\u0142owe",
+    "sport": "running",
+    "startTime": "2026-10-15 15:06:29",
+    "durationSeconds": 2811,
+    "distanceMeters": 0,
+    "calories": 312,
+    "avgHeartRate": 108.0,
+    "maxHeartRate": 149.0,
+    "avgSpeedMps": 0.0,
+    "maxSpeedMps": 0,
+    "avgCadence": null,
+    "elevationGainMeters": 0,
+    "elevationLossMeters": 0,
+    "device": "Garmin Watch",
+    "trackPoints": [],
+    "laps": [],
+    "hrZones": {
+      "z1Sec": 0,
+      "z2Sec": 0,
+      "z3Sec": 0,
+      "z4Sec": 0,
+      "z5Sec": 0
+    }
+  },
+  {
     "id": "garmin-24713241461",
     "title": "\u0106wiczenia si\u0142owe",
     "sport": "running",
