@@ -1,5 +1,31 @@
 [
   {
+    "id": "garmin-24782131413",
+    "title": "Bieg na bie\u017cni",
+    "sport": "running",
+    "startTime": "2026-10-19 20:06:21",
+    "durationSeconds": 201,
+    "distanceMeters": 250,
+    "calories": 29,
+    "avgHeartRate": 112.0,
+    "maxHeartRate": 133.0,
+    "avgSpeedMps": 1.2419999837875366,
+    "maxSpeedMps": 3.563999891281128,
+    "avgCadence": 91.046875,
+    "elevationGainMeters": 0,
+    "elevationLossMeters": 0,
+    "device": "Garmin Watch",
+    "trackPoints": [],
+    "laps": [],
+    "hrZones": {
+      "z1Sec": 0,
+      "z2Sec": 0,
+      "z3Sec": 0,
+      "z4Sec": 0,
+      "z5Sec": 0
+    }
+  },
+  {
     "id": "garmin-24733788474",
     "title": "\u0106wiczenia si\u0142owe",
     "sport": "running",
