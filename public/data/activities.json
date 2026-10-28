@@ -1,5 +1,31 @@
 [
   {
+    "id": "garmin-24873269973",
+    "title": "P\u0142ywanie na basenie",
+    "sport": "swimming",
+    "startTime": "2026-10-27 19:16:28",
+    "durationSeconds": 3227,
+    "distanceMeters": 1150,
+    "calories": 541,
+    "avgHeartRate": 127.0,
+    "maxHeartRate": 167.0,
+    "avgSpeedMps": 0.921999990940094,
+    "maxSpeedMps": 2.563999891281128,
+    "avgCadence": null,
+    "elevationGainMeters": 0,
+    "elevationLossMeters": 0,
+    "device": "Garmin Watch",
+    "trackPoints": [],
+    "laps": [],
+    "hrZones": {
+      "z1Sec": 0,
+      "z2Sec": 0,
+      "z3Sec": 0,
+      "z4Sec": 0,
+      "z5Sec": 0
+    }
+  },
+  {
     "id": "garmin-24782131413",
     "title": "Bieg na bie\u017cni",
     "sport": "running",
